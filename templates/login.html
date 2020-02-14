@@ -1,0 +1,12 @@
+{% extends "jsonBase.html" %}
+{% block param %}
+       "id": "{{ idNumber }}"
+{% endblock %}
+{% block data %}
+        {% if privilege %}
+        "status":"success", 
+        "privilege": "{{ privilege }}"
+        {% else %}
+        "status": "failure"
+        {% endif %}
+{% endblock %}

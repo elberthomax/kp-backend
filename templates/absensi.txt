@@ -1,0 +1,23 @@
+{
+    "apiVersion": "1.0", 
+    "context": "",
+    "id": "",
+    "method": "getAbsensi",
+    "params": {
+		"id": "{{ param.id }}",
+        "tahun": "{{ param.tahun }}",
+        "bulan": "{{ param.bulan }}"
+    },
+    "data": {
+        "absensi": {
+            {% for data in absensi %}
+            {"tanggal": "{{ data.tanggal }}", 
+                "in": {
+                    "jam": "{{ data. }}"
+                }
+            }
+            {% endfor %}
+        }
+    }
+
+}
