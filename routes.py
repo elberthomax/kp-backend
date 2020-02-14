@@ -1,13 +1,17 @@
-from flask import request
-from flask import render_template
+from flask import request, render_template, abort
 from app import app
 from app.models import pegawai
 import face_recognition
 
 @app.route('/login', methods=['POST'])
 def login():
-	idNum = request.form.get('id')
-	passw = request.form.get('password')
+	req = request.get_json(force=True)
+	if type(req) is not dict:
+		abort(400, "json bukan dictionary")
+	idNum = req.get('id')
+	passw = req.get('password')
+	if type(idNum) is not str or type(passw) is not str:
+		abort(400, "id atau password kosong atau bukan string")
 	found = pegawai.query.filter_by(idNumber=idNum, password=passw).first()
 	if found is not None:
 		return render_template('login.html', idNumber=idNum, privilege=found.privilege)
