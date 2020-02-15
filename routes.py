@@ -12,6 +12,8 @@ def login():
 	passw = req.get('password')
 	if type(idNum) is not str or type(passw) is not str:
 		abort(400, "id atau password kosong atau bukan string")
+	if len(idNum) > 10 or len(passw) > 64:
+		abort(400, "id atau password terlalu panjang(id max 10 ch,password max 64 ch)")
 	found = pegawai.query.filter_by(idNumber=idNum, password=passw).first()
 	if found is not None:
 		return render_template('login.html', idNumber=idNum, privilege=found.privilege)
