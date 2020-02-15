@@ -1,0 +1,14 @@
+{% extends "jsonBase.html" %}
+{%block param%}
+        "newId": "{{ newId }}"
+        "newName": "{{ newName }}"
+        "newPassword": "{{ newPass }}"
+{%endblock%}
+{% block data %}
+        {% if errorMsg %}
+            "status": "failure"
+            "errorMessage": "{{ errorMsg }}"
+        {% else %}
+            "status": "success"
+        {% endif %}
+{% endblock %}
