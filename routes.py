@@ -2,7 +2,7 @@ from flask import request, render_template, abort
 from app import app, db
 from app.models import pegawai, absensi
 import face_recognition
-import json, datetime, pytz
+import json, datetime, pytz, calendar, sqlalchemy
 import numpy as np
 
 @app.route('/login', methods=['POST'])
@@ -75,7 +75,48 @@ def absen():
 			jsonParsed['status'] = 'OUT'
 		db.session.add(absensi(**jsonParsed))
 		db.session.commit()
-		return render_template('absen.html', json=request.form['json'], data=jsonParsed)
+		return render_template('absen.html',id=jsonParsed['idNumber'], data=jsonParsed)
+
+@app.route('/getAbsensi', methods=['POST'])
+def getAbsensi():
+	parsedJson = request.get_json(force=True)
+	if type(parsedJson.get('id')) is not str and\
+	type(parsedJson.get('bulan')) is not int and\
+	type(parsedJson.get('tahun')) is not int:
+		abort(400, "id, bulan atau tahun tidak ada atau bertipe salah")
+	parsedJson['id'] = parsedJson['id'].strip()
+	if parsedJson['id'] == "":
+		return render_template("getAbsensi.html", param=parsedJson,\
+		errorMsg="id kosong")
+	if len(parsedJson['id']) > 10:
+		return render_template("getAbsensi.html", param=parsedJson,\
+		errorMsg="id terlalu panjang(max 10 karakter)")
+	if parsedJson['tahun'] < 1 or parsedJson['tahun'] > 9999:
+		return render_template("getAbsensi.html", param=parsedJson,\
+		errorMsg="tahun tidak valid(1-9999)")
+	if parsedJson['bulan'] < 1 or parsedJson['bulan'] > 12:
+		return render_template("getAbsensi.html", param=parsedJson,\
+		errorMsg="bulan tidak valid(1-12)")
+	data=[]
+	for i in range(1, calendar.monthrange(\
+	parsedJson['tahun'], parsedJson['bulan'])[1] + 1):
+		data.append({"tanggal": i})
+	query = absensi.query.filter(\
+	sqlalchemy.extract('year', absensi.date) == parsedJson['tahun'], \
+	sqlalchemy.extract('month', absensi.date) == parsedJson['bulan'])\
+	.filter_by(idNumber = parsedJson['id']).order_by(\
+	sqlalchemy.asc(absensi.time)).all()
+	for row in query:
+		index=row.date.day - 1
+		operation=row.status.lower()
+		if data[index].get(operation) is None or operation == "out":
+			data[index][operation] = {\
+			'jam': row.time.hour, \
+			'menit': row.time.minute, \
+			'detik': row.time.second}
+	return render_template("getAbsensi.html", param=parsedJson, \
+	data=json.dumps(data))
+
 
 @app.route('/form')
 def form():
