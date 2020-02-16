@@ -1,8 +1,9 @@
 from flask import request, render_template, abort
 from app import app, db
-from app.models import pegawai
+from app.models import pegawai, absensi
 import face_recognition
-import json
+import json, datetime, pytz
+import numpy as np
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -21,9 +22,69 @@ def login():
 	else:
 		return render_template('login.html', idNumber=idNum)
 
+@app.route('/absen', methods=['POST'])
+def absen():
+	try:
+		jsonParsed=json.loads(request.form.get('json'))
+	except:
+		abort(400, "invalid json")
+	if type(jsonParsed.get('id')) is not str or\
+	type(jsonParsed.get('password')) is not str:
+		abort(400, "id atau password tak ada atau bukan string")
+	else:
+		jsonParsed['id'] = jsonParsed['id'].strip()
+	img = request.files.get("photo")
+	if img is None or img.filename == "":
+ 		abort(400, "tidak ada gambar")		
+	if jsonParsed['id'] == "":
+		return render_template('absen.html', id=jsonParsed['id'], errorMsg="id kosong")
+	if len(jsonParsed['id']) > 10 or len(jsonParsed['password']) > 64:
+		render_template('absen.html', id=jsonParsed['id'], errorMsg="id(max 10) atau password(max 64) terlalu panjang")
+	
+	jsonParsed['idNumber'] = jsonParsed.pop('id')
+
+
+	found = pegawai.query.filter_by(**jsonParsed).first()
+	if found is None:
+		return render_template('absen.html',id=jsonParsed['idNumber'], errorMsg="id tidak ditemukan")
+	try:
+		img=face_recognition.load_image_file(img)
+		img=face_recognition.face_encodings(img)[0]
+	except:
+		return render_template('absen.html',id=jsonParsed['idNumber'], errorMsg="file bukan gambar atau muka tak ditemukan")
+	knownImg=[np.array(json.loads(found.image1))]
+	knownImg.append(np.array(json.loads(found.image2)))
+	knownImg.append(np.array(json.loads(found.image3)))
+	results = face_recognition.compare_faces(knownImg, img, tolerance=0.5)
+	total = 0
+	for result in results:
+		total += result
+	if total < 2:
+		return render_template('absen.html',id=jsonParsed['idNumber'], errorMsg="identitas gambar tak sesuai")
+	else:
+		now = datetime.datetime.utcnow()
+		now = pytz.utc.localize(now)
+		now = now.astimezone(pytz.timezone('Asia/Makassar'))
+		jsonParsed['name'] = found.name
+		jsonParsed['date'] = now.date()
+		jsonParsed['time'] = now.time()
+		jsonParsed.pop('password')
+		if jsonParsed['time'].hour < 12:
+			jsonParsed['status'] = 'IN'
+		else:
+			jsonParsed['status'] = 'OUT'
+		db.session.add(absensi(**jsonParsed))
+		db.session.commit()
+		return render_template('absen.html', json=request.form['json'], data=jsonParsed)
+
 @app.route('/form')
 def form():
     return render_template('imageForm.html')
+
+@app.route('/absenForm')
+def absenForm():
+    return render_template('absenForm.html')
+
 
 @app.route('/input', methods=['POST'])
 def input():

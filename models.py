@@ -18,5 +18,5 @@ class absensi(db.Model):
 	idNumber = db.Column("IDNumber", db.String(10), db.ForeignKey("pegawai.ID Number"), primary_key=True)
 	name = db.Column("Name", db.String(50))
 	time = db.Column("Time", db.Time, primary_key=True)
-	status = db.Column("Status", db.String(5), default="IN")
+	status = db.Column("Status", db.String(5), default="IN", primary_key=True)
 	verification = db.Column("Verification", db.String(10), default="Password")
