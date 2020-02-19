@@ -1,4 +1,4 @@
-from app import db
+from kpabsensi import db
 
 class pegawai(db.Model):
 	idNumber = db.Column("ID Number", db.String(10), primary_key=True)

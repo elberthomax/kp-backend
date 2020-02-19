@@ -1,9 +1,13 @@
-from flask import request, render_template, abort
-from app import app, db
-from app.models import pegawai, absensi
+from  flask import request, render_template, abort
+from kpabsensi.models import pegawai, absensi
 import face_recognition
 import json, datetime, pytz, calendar, sqlalchemy
 import numpy as np
+from kpabsensi import app, db
+
+@app.route('/')
+def index():
+    return "hellow API kp, hhhh -_-"
 
 @app.route('/login', methods=['POST'])
 def login():
