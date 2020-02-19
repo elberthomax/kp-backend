@@ -1,0 +1,16 @@
+{% extends "jsonBase.html" %}
+{% block method %}absen{% endblock%}
+{% block param %}
+    "id":"{{ param.idNumber }}"
+{% endblock %}
+{% block data %}
+
+    {% if errorMsg %}
+        "status": "failure"
+        "errorMessage": "{{ errorMsg }}"
+    {% else %}
+        "status": "success"
+        "operasi": "{{ param.status }}"
+        "waktu": "{{ param.time.strftime('%H:%M:%S') }}"
+    {% endif %}
+{% endblock %}

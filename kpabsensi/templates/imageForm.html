@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>HTML Forms</h2>
+
+<form action="http://localhost:5000/newEmployee" method="post" enctype="multipart/form-data">
+  json:<br>
+  <input type="text" name="json">
+  <br><br>
+  <input type="file" name="image1">
+  <br><br>
+  <input type="file" name="image2">
+  <br><br>
+  <input type="file" name="image3">
+  <br><br>
+  <input type="submit" value="Submit">
+</form> 
+
+<p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+
+</body>
+</html>
