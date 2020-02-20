@@ -7,5 +7,6 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 
 from kpabsensi import routes, models
-
-app.run()
+if __name__ == "__main__":
+    app.run()
+#app.run()
