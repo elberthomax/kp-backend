@@ -92,9 +92,11 @@ def getAbsensi():
 		return render_template("getAbsensi.html", param=parsedJson,\
 		errorMsg="bulan tidak valid(1-12)")
 	data=[]
-	for i in range(1, calendar.monthrange(\
-	parsedJson['tahun'], parsedJson['bulan'])[1] + 1):
-		data.append({"tanggal": i})
+	day = calendar.monthrange(parsedJson['tahun'], \
+							  parsedJson['bulan'])
+	for i in range(1, day[1] + 1):
+		data.append({"tanggal": i, \
+					 "hari": (day[0]+i-1)%7})
 	query = absensi.query.filter(\
 	sqlalchemy.extract('year', absensi.date) == parsedJson['tahun'], \
 	sqlalchemy.extract('month', absensi.date) == parsedJson['bulan'])\
