@@ -130,9 +130,9 @@ def getAbsensiById():
 						   param=parsedJson, \
 						   data=json.dumps(data))
 
-@app.route('/form')
+@app.route('/newEmployeeForm')
 def form():
-    return render_template('imageForm.html')
+    return render_template('newEmployeeForm.html')
 
 @app.route('/absenForm')
 def absenForm():
