@@ -1,0 +1,17 @@
+{% extends "jsonBase.html" %}
+{% block method %}getAbsensiById{% endblock %}
+{% block param %}
+    "tahun": {{ param['tahun'] }},
+    "bulan": {{ param['bulan'] }}
+    "hari": {{ param['hari'] }}
+{% endblock %}
+{% block data %}
+    {% if errorMsg %}
+    "status": "failure"
+    {% else %}
+    "status": "success",
+    "absensi":
+        {{ data|safe }}
+    {% endif %}
+{% endblock %}
+

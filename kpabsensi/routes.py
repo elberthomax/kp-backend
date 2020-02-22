@@ -74,45 +74,61 @@ def absen():
 @app.route('/getAbsensi', methods=['POST'])
 def getAbsensi():
 	parsedJson = request.get_json(force=True)
-	if type(parsedJson.get('id')) is not str and\
-	type(parsedJson.get('bulan')) is not int and\
-	type(parsedJson.get('tahun')) is not int:
-		abort(400, "id, bulan atau tahun tidak ada atau bertipe salah")
-	parsedJson['id'] = parsedJson['id'].strip()
-	if parsedJson['id'] == "":
-		return render_template("getAbsensi.html", param=parsedJson,\
-		errorMsg="id kosong")
-	if len(parsedJson['id']) > 10:
-		return render_template("getAbsensi.html", param=parsedJson,\
-		errorMsg="id terlalu panjang(max 10 karakter)")
-	if parsedJson['tahun'] < 1 or parsedJson['tahun'] > 9999:
-		return render_template("getAbsensi.html", param=parsedJson,\
-		errorMsg="tahun tidak valid(1-9999)")
-	if parsedJson['bulan'] < 1 or parsedJson['bulan'] > 12:
-		return render_template("getAbsensi.html", param=parsedJson,\
-		errorMsg="bulan tidak valid(1-12)")
+	func.strCheck(parsedJson.get("id"), "id", 10, False)
+	func.intCheck(parsedJson.get("tahun"), "tahun", 9999)
+	func.intCheck(parsedJson.get("bulan"), "bulan", 12)
+	
 	data=[]
 	day = calendar.monthrange(parsedJson['tahun'], \
 							  parsedJson['bulan'])
 	for i in range(1, day[1] + 1):
 		data.append({"tanggal": i, \
-					 "hari": (day[0]+i-1)%7})
+					 "hari": (day[0] + i - 1) % 7})
+
 	query = absensi.query.filter(\
-	sqlalchemy.extract('year', absensi.date) == parsedJson['tahun'], \
-	sqlalchemy.extract('month', absensi.date) == parsedJson['bulan'])\
-	.filter_by(idNumber = parsedJson['id']).order_by(\
-	sqlalchemy.asc(absensi.time)).all()
+				sqlalchemy.extract('year', absensi.date) == parsedJson['tahun'], \
+				sqlalchemy.extract('month', absensi.date) == parsedJson['bulan'])\
+			.filter_by(idNumber = parsedJson['id'])\
+			.order_by(sqlalchemy.asc(absensi.time)).all()
 	for row in query:
-		index=row.date.day - 1
+		index = row.date.day - 1
 		operation=row.status.lower()
 		if data[index].get(operation) is None or operation == "out":
 			data[index][operation] = {\
-			'jam': row.time.hour, \
-			'menit': row.time.minute, \
-			'detik': row.time.second}
-	return render_template("getAbsensi.html", param=parsedJson, \
-	data=json.dumps(data))
+				'jam': row.time.hour, \
+				'menit': row.time.minute, \
+				'detik': row.time.second\
+			}
+	return render_template("getAbsensi.html", \
+						   param=parsedJson, \
+						   data=json.dumps(data))
 
+@app.route("/getAbsensiById", methods=["POST"])
+def getAbsensiById():
+	parsedJson = request.get_json(force=True)
+	if type(parsedJson) is not dict:
+		return "json bukan dictionary"
+	date = func.dateCheck(parsedJson.get("tahun"), \
+				  parsedJson.get("bulan"), \
+				  parsedJson.get("hari"))
+	data = []
+	pegawaiList = pegawai.query.with_entities(pegawai.idNumber)
+	for row in pegawaiList:
+		data.append({"id": row.idNumber})
+	absensiList = absensi.query.filter_by(date=date).\
+				  order_by(sqlalchemy.asc(absensi.time)).all()
+	for row in absensiList:
+		operation = row.status.lower()
+		for entry in data:
+			if entry["id"] == row.idNumber:
+				if entry.get(operation) is None or operation == "out":
+					entry[operation] = {\
+						'jam': row.time.hour, \
+						'menit': row.time.minute, \
+						'detik': row.time.second}
+	return render_template("getAbsensiById.html", \
+						   param=parsedJson, \
+						   data=json.dumps(data))
 
 @app.route('/form')
 def form():

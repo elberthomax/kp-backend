@@ -1,6 +1,6 @@
 from flask import abort
 from kpabsensi.models import pegawai, absensi
-import face_recognition
+import face_recognition, calendar, datetime
 
 def strCheck(string, stringName, stringLen, null=True):
 	if type(string) is not str:
@@ -11,6 +11,20 @@ def strCheck(string, stringName, stringLen, null=True):
 	if len(string) > stringLen:
 		abort(400, stringName + " tak boleh lebih dari " + \
 		stringLen + " karakter")
+
+def intCheck(integer, intName, intMax):
+	if type(integer) is not int:
+		abort(400, intName + " tidak ada atau bukan integer")
+	if integer < 0 or integer > intMax:
+		abort(400, intName + " diluar batas(0 - " + str(intMax) + ")")
+
+def dateCheck(year, month, day):
+	intCheck(year, "tahun", 9999)
+	intCheck(month, "bulan", 12)
+	dayRange = calendar.monthrange(year, month)
+	intCheck(day, "hari", dayRange[1])
+	return datetime.date(year, month, day)
+	
 
 def getPegawai(queryJson, booleanOnly = False):
 	query = pegawai.query.filter_by(**queryJson).first()
