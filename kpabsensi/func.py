@@ -19,17 +19,17 @@ def getPegawai(queryJson, booleanOnly = False):
 	else:
 		return query
 
-def imgToEnc(img):
+def imgToEnc(img, postVar):
 	if img is None or img.filename == "":
-		abort(400, "tidak ada gambar")
+		return "tidak ada gambar pada key" + postVar
 	try:
 		img = face_recognition.load_image_file(img)
 		img = face_recognition.face_encodings(img)
 	except:
-		return "file bukan gambar"
+		return "file pada key " + postVar + " bukan gambar"
 	if len(img) == 0:
-		return "wajah tak ditemukan"
+		return "wajah tak ditemukan pada key " + postVar
 	elif len(img) > 1:
-		return "lebih dari 1 wajah ditemukan"
+		return "lebih dari 1 wajah ditemukan pada key " + postVar
 	else:
 		return img[0]

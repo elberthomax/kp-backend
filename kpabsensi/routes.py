@@ -14,7 +14,7 @@ def index():
 def login():
 	parsedJson = request.get_json(force=True)
 	if type(parsedJson) is not dict:
-		abort(400, "json bukan dictionary")
+		return "json bukan dictionary"
 	func.strCheck(parsedJson.get('id'), "id", 10, False)
 	func.strCheck(parsedJson.get('password'), "password", 64, True)
 	parsedJson["idNumber"] = parsedJson.pop("id")
@@ -41,7 +41,7 @@ def absen():
 		return render_template('absen.html',param=parsedJson, \
 		errorMsg="id tidak ditemukan")
 	parsedJson["idNumber"] = parsedJson.pop("id")
-	imgEnc = func.imgToEnc(request.files.get("photo"))
+	imgEnc = func.imgToEnc(request.files.get("photo"), "photo")
 	if type(imgEnc) is str:
 		return render_template('absen.html',param=parsedJson, \
 		errorMsg=imgEnc)
