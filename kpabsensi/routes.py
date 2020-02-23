@@ -131,7 +131,7 @@ def getAbsensiById():
 						   data=json.dumps(data))
 
 @app.route('/newEmployeeForm')
-def form():
+def newEmployeeForm():
     return render_template('newEmployeeForm.html')
 
 @app.route('/absenForm')
