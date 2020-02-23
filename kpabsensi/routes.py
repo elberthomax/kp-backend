@@ -1,7 +1,7 @@
 from  flask import request, render_template, abort
 from kpabsensi.models import pegawai, absensi
 import face_recognition
-import json, datetime, pytz, calendar, sqlalchemy
+import json, datetime, pytz, calendar, sqlalchemy, time
 import numpy as np
 from kpabsensi import app, db
 import kpabsensi.func as func
@@ -70,6 +70,71 @@ def absen():
 		db.session.add(absensi(**parsedJson))
 		db.session.commit()
 		return render_template('absen.html',param=parsedJson)
+
+@app.route('/absenNoId', methods=['POST'])
+def absenNoId():
+	imgEnc = func.imgToEnc(request.files.get("photo"), "photo")
+	if type(imgEnc) is str:
+		return render_template("absenNoId.html", errorMsg=imgEnc)
+	startTime = time.time()
+	pegawaiList = pegawai.query.all()
+	comparisonDict = {"imgEnc1": [], \
+					  "imgEnc2": [], \
+					  "imgEnc3": [], \
+					  "id": [], \
+					  "name": []}
+	tabulation = []
+	for row in pegawaiList:
+		if row.privilege == "User":
+			tabulation.append(0)
+			comparisonDict["imgEnc1"].append(np.array(json.loads(row.image1)))
+			comparisonDict["imgEnc2"].append(np.array(json.loads(row.image2)))
+			comparisonDict["imgEnc3"].append(np.array(json.loads(row.image3)))
+			comparisonDict["id"].append(row.idNumber)
+			comparisonDict["name"].append(row.name)
+	dataProcessingTime = time.time() - startTime
+	startTime = time.time()
+	for i in range(1,4):
+		result = face_recognition.compare_faces(\
+			comparisonDict["imgEnc1"], \
+			imgEnc, tolerance = 0.5)
+		for j in range(len(tabulation)):
+			if result[j]:
+				tabulation[j] += 1
+	imgComparisonTime = time.time() - startTime
+	matches = []
+	maxMatch = 2
+	for i in range(len(tabulation)):
+		if tabulation[i] == maxMatch:
+			matches.append(i)
+		elif tabulation[i] > maxMatch:
+			maxMatch += 1
+			matches = [i]
+	if len(matches) == 0:
+		return render_template("absenNoId.html", \
+							   errorMsg="wajah yang sesuai tak ditemukan")
+	elif len(matches) > 1:
+		return render_template("absenNoId.html", \
+							   errorMsg="lebih dari 1 wajah yang sesuai ditemukan")
+	else:
+		now = datetime.datetime.utcnow()
+		now = pytz.utc.localize(now)
+		now = now.astimezone(pytz.timezone('Asia/Makassar'))
+		data = {"idNumber": comparisonDict["id"][matches[0]], \
+				"name": comparisonDict["name"][matches[0]], \
+				"time": now.time(), \
+				"date": now.date()}
+		if now.time().hour < 12:
+			data['status'] = 'IN'
+		else:
+			data['status'] = 'OUT'
+		db.session.add(absensi(**data))
+		db.session.commit()
+		data["dataProcessingTime"] = dataProcessingTime
+		data["imgComparisonTime"] = imgComparisonTime
+		data["pegawaiSize"] = len(tabulation)
+		return render_template('absenNoId.html', data = data)
+
 
 @app.route('/getAbsensi', methods=['POST'])
 def getAbsensi():

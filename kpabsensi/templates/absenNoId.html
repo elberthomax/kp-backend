@@ -1,0 +1,20 @@
+{% extends "jsonBase.html" %}
+{% block method %}absenNoId{% endblock%}
+{% block param %}{% endblock %}
+{% block data %}
+
+    {% if errorMsg %}
+        "status": "failure",
+        "errorMessage": "{{ errorMsg }}"
+    {% else %}
+        "status": "success",
+        "id": "{{ data.idNumber }}",
+        "nama": "{{ data.name }}",
+        "operasi": "{{ data.status }}",
+        "waktu": "{{ data.time.strftime('%H:%M:%S') }}",
+		"lamaProsesData": {{ data.dataProcessingTime }},
+		"lamaPembandinganGambar": {{ data.imgComparisonTime }},
+		"banyakPegawai": {{ data.pegawaiSize }}
+    {% endif %}
+{% endblock %}
+

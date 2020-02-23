@@ -35,7 +35,7 @@ def getPegawai(queryJson, booleanOnly = False):
 
 def imgToEnc(img, postVar):
 	if img is None or img.filename == "":
-		return "tidak ada gambar pada key" + postVar
+		return "tidak ada gambar pada key " + postVar
 	try:
 		img = face_recognition.load_image_file(img)
 		img = face_recognition.face_encodings(img)
