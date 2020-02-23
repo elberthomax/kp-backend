@@ -6,11 +6,11 @@
 {% block data %}
 
     {% if errorMsg %}
-        "status": "failure"
+        "status": "failure", 
         "errorMessage": "{{ errorMsg }}"
     {% else %}
-        "status": "success"
-        "operasi": "{{ param.status }}"
+        "status": "success",
+        "operasi": "{{ param.status }}",
         "waktu": "{{ param.time.strftime('%H:%M:%S') }}"
     {% endif %}
 {% endblock %}
