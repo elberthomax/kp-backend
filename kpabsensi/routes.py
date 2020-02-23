@@ -96,7 +96,7 @@ def absenNoId():
 	startTime = time.time()
 	for i in range(1,4):
 		result = face_recognition.compare_faces(\
-			comparisonDict["imgEnc1"], \
+			comparisonDict["imgEnc" + str(i)], \
 			imgEnc, tolerance = 0.5)
 		for j in range(len(tabulation)):
 			if result[j]:
