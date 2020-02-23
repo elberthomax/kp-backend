@@ -1,13 +1,13 @@
 {% extends "jsonBase.html" %}
 {% block method %}newEmployee{% endblock %}
 {%block param%}
-        "newId": "{{ newId }}"
-        "newName": "{{ newName }}"
+        "newId": "{{ newId }}",
+        "newName": "{{ newName }}",
         "newPassword": "{{ newPass }}"
 {%endblock%}
 {% block data %}
         {% if errorMsg %}
-            "status": "failure"
+            "status": "failure",
             "errorMessage": "{{ errorMsg }}"
         {% else %}
             "status": "success"
