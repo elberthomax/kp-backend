@@ -168,19 +168,20 @@ def getAbsensi():
 						   param=parsedJson, \
 						   data=json.dumps(data))
 
-@app.route("/getAbsensiById", methods=["POST"])
-def getAbsensiById():
-	parsedJson = request.get_json(force=True)
-	if type(parsedJson) is not dict:
-		return "json bukan dictionary"
-	date = func.dateCheck(parsedJson.get("tahun"), \
-				  parsedJson.get("bulan"), \
-				  parsedJson.get("hari"))
+@app.route("/getTodayAbsensi")
+def getTodayAbsensi():
+	now = datetime.datetime.utcnow()
+	now = pytz.utc.localize(now)
+	now = now.astimezone(pytz.timezone('Asia/Makassar'))
+
 	data = []
-	pegawaiList = pegawai.query.with_entities(pegawai.idNumber)
+	pegawaiList = pegawai.query.with_entities(pegawai.idNumber, \
+											  pegawai.name)
 	for row in pegawaiList:
-		data.append({"id": row.idNumber})
-	absensiList = absensi.query.filter_by(date=date).\
+		data.append({"id": row.idNumber, \
+					 "nama": row.name})
+
+	absensiList = absensi.query.filter_by(date=now.date()).\
 				  order_by(sqlalchemy.asc(absensi.time)).all()
 	for row in absensiList:
 		operation = row.status.lower()
@@ -192,8 +193,8 @@ def getAbsensiById():
 						'menit': row.time.minute, \
 						'detik': row.time.second}
 	return render_template("getAbsensiById.html", \
-						   param=parsedJson, \
-						   data=json.dumps(data))
+						   data=json.dumps(data), \
+						   date=now)
 
 @app.route('/newEmployeeForm')
 def newEmployeeForm():

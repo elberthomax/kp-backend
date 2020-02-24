@@ -1,15 +1,15 @@
 {% extends "jsonBase.html" %}
-{% block method %}getAbsensiById{% endblock %}
-{% block param %}
-    "tahun": {{ param['tahun'] }},
-    "bulan": {{ param['bulan'] }},
-    "hari": {{ param['hari'] }}
-{% endblock %}
+{% block method %}getTodayAbsensi{% endblock %}
+{% block param %}{% endblock %}
 {% block data %}
     {% if errorMsg %}
     "status": "failure"
     {% else %}
     "status": "success",
+	"tahun": {{ date.year }}, 
+	"bulan": {{ date.month }}, 
+	"tanggal": {{ date.day }}, 
+	"hari": {{ date.weekday() }}, 
     "absensi":
         {{ data|safe }}
     {% endif %}
