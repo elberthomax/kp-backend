@@ -24,7 +24,7 @@ def login():
 	else:
 		return render_template('login.html', param=parsedJson)
 
-@app.route('/absen', methods=['POST'])
+#@app.route('/absen', methods=['POST'])
 def absen():
 	try:
 		parsedJson=json.loads(request.form.get('json'))
@@ -130,9 +130,36 @@ def absenNoId():
 			data['status'] = 'OUT'
 		db.session.add(absensi(**data))
 		db.session.commit()
+
+		if data['status'] == 'OUT':
+			inData = absensi.query.filter_by(date = now.date(),\
+											 idNumber=data['idNumber'], \
+											 status='IN')\
+							.order_by(sqlalchemy.asc(absensi.time)).first()
+			if inData is None:
+				data['sisaWaktuKerja'] = "00:00:00"
+			else:
+				today730 = datetime.datetime.combine(datetime.date.today(),\
+											datetime.time(7, 30, 0))
+				if datetime.datetime.combine(inData.date,inData.time) < today730:
+					inData.time = today730.time()
+				waktuKerja = datetime.datetime.combine(datetime.date.today(), now.time()) - \
+							 datetime.datetime.combine(datetime.date.today(), inData.time)
+				lamaKerja = datetime.timedelta(hours=8)
+				if now.weekday() == 4:
+					lamaKerja = datetime.timedelta(hours=8,minutes=30)
+				if waktuKerja >= lamaKerja:
+					data['sisaWaktuKerja'] = '00:00:00'
+				else:
+					sisaWaktuKerja = lamaKerja - waktuKerja
+					hours, remainder = divmod(sisaWaktuKerja.seconds, 3600)
+					minutes, seconds = divmod(remainder, 60)
+					data['sisaWaktuKerja'] = '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))
+			
 		data["dataProcessingTime"] = dataProcessingTime
 		data["imgComparisonTime"] = imgComparisonTime
 		data["pegawaiSize"] = len(tabulation)
+		
 		return render_template('absenNoId.html', data = data)
 
 
