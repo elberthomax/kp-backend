@@ -6,10 +6,6 @@ import numpy as np
 from kpabsensi import app, db
 import kpabsensi.func as func
 
-@app.route('/')
-def index():
-    return "hellow API kp, hhhh -_-"
-
 @app.route('/login', methods=['POST'])
 def login():
 	parsedJson = request.get_json(force=True)
@@ -112,10 +108,17 @@ def absenNoId():
 			matches = [i]
 	if len(matches) == 0:
 		return render_template("absenNoId.html", \
-							   errorMsg="wajah yang sesuai tak ditemukan")
+							   errorMsg="wajah yang sesuai tak ditemukan", \
+							   dataProcessingTime=dataProcessingTime, \
+							   imgComparisonTime=imgComparisonTime, \
+							   pegawaiSize=len(tabulation))
 	elif len(matches) > 1:
 		return render_template("absenNoId.html", \
-							   errorMsg="lebih dari 1 wajah yang sesuai ditemukan")
+							   errorMsg="lebih dari 1 wajah yang sesuai ditemukan", \
+							   dataProcessingTime=dataProcessingTime, \
+							   imgComparisonTime=imgComparisonTime, \
+							   pegawaiSize=len(tabulation))
+
 	else:
 		now = datetime.datetime.utcnow()
 		now = pytz.utc.localize(now)

@@ -2,10 +2,19 @@
 {% block method %}absenNoId{% endblock%}
 {% block param %}{% endblock %}
 {% block data %}
-
     {% if errorMsg %}
         "status": "failure",
-        "errorMessage": "{{ errorMsg }}"
+        "errorMessage": "{{ errorMsg }}",
+		{% if dataProcessingTime %}
+        "lamaProsesData": {{ dataProcessingTime }},
+        "lamaPembandinganGambar": {{ imgComparisonTime }},
+        "banyakPegawai": {{ pegawaiSize }}
+        {% else %}
+        "lamaProsesData": 0,
+        "lamaPembandinganGambar": 0,
+        "banyakPegawai": 0
+        {% endif %}
+        
     {% else %}
         "status": "success",
         "id": "{{ data.idNumber }}",
